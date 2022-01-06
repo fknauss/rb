@@ -1,7 +1,6 @@
 #!/usr/bin/env ruby
 
 words = DATA.readlines(chomp: true)
-chw= words.map{|w|w.each_char.to_a}.transpose.map{|x|Hash[x.tally]}
 
 # Options:
 # t=.....     match template, 5 chars, use '.' for unknown
@@ -13,9 +12,10 @@ words.select! {|w| Regexp.new(opts["t"]).match(w)} if opts.has_key?("t")
 words.select! {|w| Regexp.new("[#{opts["i"]}]").match(w)} if opts.has_key?("i")
 words.reject! {|w| Regexp.new("[#{opts["x"]}]").match(w)} if opts.has_key?("x")
 
-ww = words.map {|w|[w, w.each_char.zip(chw).map{|c,w|w[c]}.sum]}
-top = ww.sort_by{|_,x|x}.reverse.map(&:first).take(12)
-puts top.join(", ")
+char_weight= words.map{|w|w.each_char.to_a}.transpose.map{|x|Hash[x.tally]}
+word_weight = words.map {|w|[w, w.each_char.zip(char_weight).map{|c,w|w[c]}.sum]}
+puts word_weight.sort_by{|_,x|x}.reverse.map(&:first).take(12).join(", ")
+
 __END__
 aback
 abase
