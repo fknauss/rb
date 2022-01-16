@@ -1,0 +1,52 @@
+#!/usr/bin/env ruby
+
+require 'open-uri'
+SOURCE = "https://www.powerlanguage.co.uk/wordle/main.c1506a22.js"
+source = URI.open(SOURCE).readlines(chomp: true)
+TARGETS = source.first.match(/La=\[([^\]]*)\]/)[1].scan(/\w+/)
+GUESSES = TARGETS+source.first.match(/Ta=\[([^\]]*)\]/)[1].scan(/\w+/)
+#GUESSES = TARGETS
+
+KEY = %w/- o +/         # not match, wrong location, match
+RKEY = Hash[KEY.each_with_index.to_a]
+
+def key(n)
+  a = n.to_s(3).each_char.to_a
+  a = ["0"]*(5-a.length)+a
+  a.map{|n| KEY[n.to_i]}.join('')
+end
+
+def feedback(guess, target)
+  g=guess.each_char.to_a
+  t = target.each_char.to_a
+  5.times{|i|t[i]=g[i]=2 if g[i]==t[i]}
+  5.times.reject{|i|g[i]==2}.each{|i| ti=t.index(g[i]);t[ti]=g[i]=1 if ti}
+  5.times{|i| g[i]=0 unless g[i].is_a?(Integer)}
+  g.map(&:to_s).join('').to_i(3)
+end
+
+maxbins = GUESSES.map do |g|
+  bins=Array.new(3**5,0)
+  TARGETS.each{|t|bins[feedback(g,t)]+=1}
+  [g,bins.max]
+end
+
+guess1 =  maxbins.sort_by{|_,a|a}.first[0]
+puts "First guess: #{guess1}"
+bins = Array.new(3**5){Array.new}
+TARGETS.each {|t| bins[feedback(guess1,t)] << t}
+
+puts "Key:\n-   black\no   yellow\n+   green"
+
+puts "Second guesses: "
+guess2 = bins.map do |targets2|
+   next nil unless targets2.length > 1
+   maxbins = GUESSES.map do |g|
+    bins = Array.new(3**5,0)
+    targets2.each{|t|bins[feedback(g,t)]+=1}
+    [g,bins.max]
+   end
+   maxbins.sort_by{|_,a|a}.first
+end
+
+guess2.each.with_index {|a,i| puts "#{key(i)}: #{a[0]} (#{a[1]})" if a}
