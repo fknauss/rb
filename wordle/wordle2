@@ -1,9 +1,5 @@
 #!/usr/bin/env ruby
 
-require 'open-uri'
-SOURCE = "https://www.powerlanguage.co.uk/wordle/main.c1506a22.js"
-source = URI.open(SOURCE).readlines(chomp: true)
-TARGETS = source.first.match(/La=\[([^\]]*)\]/)[1].scan(/\w+/)
 GUESSES = TARGETS+source.first.match(/Ta=\[([^\]]*)\]/)[1].scan(/\w+/)
 #GUESSES = TARGETS
 
@@ -28,7 +24,8 @@ end
 maxbins = GUESSES.map do |g|
   bins=Array.new(3**5,0)
   TARGETS.each{|t|bins[feedback(g,t)]+=1}
-  [g,bins[0]]
+  #[g,bins[0]]
+  [g,bins.max]
 end
 
 guess1 =  maxbins.sort_by{|_,a|a}.first[0]
