@@ -1,6 +1,11 @@
 #!/usr/bin/env ruby
-require 'json'
-words = eval(open('./wordles.txt').readline(chomp: true))
+
+require 'open-uri'
+SOURCE = "https://www.powerlanguage.co.uk/wordle/main.c1506a22.js"
+source = URI.open(SOURCE).readlines(chomp: true)
+words = source.first.match(/La=\[([^\]]*)\]/)[1].scan(/\w+/)
+
+
 # Options:
 # t=.....     match template, 5 chars, use '.' for unknown
 # i=letters   letters that need to be included
