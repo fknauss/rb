@@ -1,10 +1,10 @@
 #!/usr/bin/env ruby
 
 require 'open-uri'
-SOURCE = "https://www.powerlanguage.co.uk/wordle/main.c1506a22.js"
+SOURCE = "https://www.nytimes.com/games/wordle/main.18637ca1.js"
 source = URI.open(SOURCE).readlines(chomp: true)
-TARGETS = source.first.match(/La=\[([^\]]*)\]/)[1].scan(/\w+/)
-GUESSES = TARGETS+source.first.match(/Ta=\[([^\]]*)\]/)[1].scan(/\w+/)
+TARGETS = source.first.match(/Ma=\[([^\]]*)\]/)[1].scan(/\w+/)
+GUESSES = TARGETS+source.first.match(/Oa=\[([^\]]*)\]/)[1].scan(/\w+/)
 #GUESSES = TARGETS
 
 KEY = %w/- o +/         # not match, wrong location, match
@@ -30,9 +30,10 @@ def feedback(guess, target)
 end
 
 if ARGV.length == 0
-  puts "raise"
+  puts "(#{TARGETS.length}) arise(168), raise(168), aesir(168), reais(168), serai(168)"
   exit
 end
+
 ARGV.each do |a|
   g,ks = a.split('=')
   unless /^\w{5}$/.match(g) && /^[-o+]{5}$/.match(ks)
@@ -43,9 +44,8 @@ ARGV.each do |a|
   TARGETS.select!{|t| feedback(g,t)==k}
 end
 
-if TARGETS.length == 1
-  puts TARGETS.first
-  exit
+if TARGETS.length < 10
+  puts TARGETS.join(', ')
 end
 
 maxbins = GUESSES.map do |g|
@@ -53,7 +53,11 @@ maxbins = GUESSES.map do |g|
   TARGETS.each{|t|bins[feedback(g,t)]+=1}
   [g,bins.max]
 end
-
-guess1 =  maxbins.sort_by{|_,a|a}.first[0]
-
-puts guess1
+idx = maxbins.map{|_,a|a}.min
+if idx>2||TARGETS.length >=10
+  guess1 =  maxbins.select{|_,a|a==idx}.map{|a,b|"#{a}(#{b})"}.join(", ")
+  puts "(#{TARGETS.length}) #{guess1}"
+end
+guess1 = maxbins.select{|a,b|TARGETS.include?(a) && b==idx}.
+                            map{|a,b|"#{a}(#{b})"}.join(", ")
+puts "(#{TARGETS.length}) #{guess1}"
