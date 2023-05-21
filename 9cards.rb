@@ -15,5 +15,5 @@ def trial(x)    # determine best score if [x] cards have been dealt
     [s0, undealt.map{trial([*x, _1])}.sum.to_f/undealt.length].max
 end
 
-p trial([])
+puts trial([])
 
